@@ -60,3 +60,14 @@ A new RHSSO image is built by adding a modified version of standalone-openshift.
 
 ## Other
 TODO: The hostname for the Infinispan server it currently not configurable.
+
+## Build and push image
+docker build . -t keycloak-infinispan:latest
+docker tag keycloak-infinispan:latest torbjorndahlen/keycloak-infinispan:latest
+docker push torbjorndahlen/keycloak-infinispan:latest
+
+## Deploy image in OpenShift
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest
+oc create route edge secure-keycloak-infinispan --service=keycloak-infinispan --port=8080
+
+
