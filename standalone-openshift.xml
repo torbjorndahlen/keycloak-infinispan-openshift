@@ -50,11 +50,7 @@
                 <authorization>
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
                 </authorization>
-                <server-identities>
-                    <ssl>
-                        <keystore  path="/etc/eap-secret-volume/keystore.jks" keystore-password="secret"/>
-                    </ssl>
-                </server-identities>
+                <!-- ##SSL## -->
             </security-realm>
         </security-realms>
         <audit-log>
@@ -90,7 +86,7 @@
         <subsystem xmlns="urn:jboss:domain:logging:6.0">
             <console-handler name="CONSOLE">
                 <formatter>
-                    <named-formatter name="COLOR-PATTERN"/>
+                    <named-formatter name="##CONSOLE-FORMATTER##"/>
                 </formatter>
             </console-handler>
             <logger category="com.arjuna">
@@ -125,7 +121,7 @@
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:5.0">
             <datasources>
-                <datasource jta="true" jndi-name="java:jboss/datasources/KeycloakDS" pool-name="KeycloakDS" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}"> <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url> <driver>h2</driver> <security> <user-name>sa</user-name> <password>sa</password> </security> </datasource><!-- ##DATASOURCES## -->
+                <!-- ##DATASOURCES## -->
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
                     <driver>h2</driver>
@@ -146,7 +142,7 @@
             </datasources>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
-            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}" auto-deploy-exploded="false"/>
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}" auto-deploy-exploded="##AUTO_DEPLOY_EXPLODED##"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:4.0">
             <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
@@ -165,7 +161,7 @@
                 </managed-scheduled-executor-services>
             </concurrent>
             <default-bindings context-service="java:jboss/ee/concurrency/context/default"
-                              datasource="java:jboss/datasources/ExampleDS"
+                              datasource="##DEFAULT_DATASOURCE##"
                               jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
                               managed-executor-service="java:jboss/ee/concurrency/executor/default"
                               managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
@@ -231,23 +227,15 @@
                 <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
                 <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
                 <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-  
+                
                 <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
                 <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
                 <local-cache name="authorization">
                     <object-memory size="10000"/>
                 </local-cache>
- 
-                <local-cache name="keys">
-                    <object-memory size="1000"/>
-                    <expiration max-idle="3600000"/>
-                </local-cache>
-                <distributed-cache name="actionTokens" owners="${env.CACHE_OWNERS_COUNT:2}">
-                    <object-memory size="-1"/>
-                    <expiration max-idle="-1" interval="300000"/>
-                </distributed-cache>
+                
 
-               <replicated-cache name="work">
+                <replicated-cache name="work">
                     <remote-store cache="work" 
                             remote-servers="remote-cache" 
                             passivation="false"
@@ -258,14 +246,14 @@
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
                         <property name="infinispan.client.hotrod.auth_username">developer</property>
-                        <property name="infinispan.client.hotrod.auth_password">LxLOnkybbvQzfPTV</property>
+                        <property name="infinispan.client.hotrod.auth_password">yrYogZdNnAoBrJp9</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
                         <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
                     </remote-store>
                 </replicated-cache>
 
-                <distributed-cache name="clientSessions" owners="${env.CACHE_OWNERS_COUNT:1}">
+                <distributed-cache name="clientSessions" owners="1">
                     <remote-store cache="clientSessions" 
                             remote-servers="remote-cache" 
                             passivation="false"
@@ -276,7 +264,7 @@
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
                         <property name="infinispan.client.hotrod.auth_username">developer</property>
-                        <property name="infinispan.client.hotrod.auth_password">LxLOnkybbvQzfPTV</property>
+                        <property name="infinispan.client.hotrod.auth_password">yrYogZdNnAoBrJp9</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
                         <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
@@ -284,7 +272,14 @@
                 </distributed-cache>
 
 
-
+                <local-cache name="keys">
+                    <object-memory size="1000"/>
+                    <expiration max-idle="3600000"/>
+                </local-cache>
+                <distributed-cache name="actionTokens" owners="${env.CACHE_OWNERS_COUNT:2}">
+                    <object-memory size="-1"/>
+                    <expiration max-idle="-1" interval="300000"/>
+                </distributed-cache>
             </cache-container>
             <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
                 <transport lock-timeout="60000"/>
@@ -360,22 +355,16 @@
             <stacks>
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
-                    <protocol type="dns.DNS_PING" ><property name="dns_query">sso-ping</property><property name="async_discovery_use_separate_thread_per_request">true</property></protocol>
+                    <!-- ##JGROUPS_PING_PROTOCOL## -->
                     <protocol type="MERGE3"/>
                     <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD_ALL"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <protocol type="SYM_ENCRYPT"> <property name="provider">SunJCE</property> <property name="sym_algorithm">AES</property> <property name="encrypt_entire_message">true</property> <property name="keystore_name">/etc/jgroups-encrypt-secret-volume/jgroups.jceks</property> <property name="store_password">secret</property> <property name="alias">secret-key</property> </protocol>
+                    <!-- ##JGROUPS_ENCRYPT## -->
                     <protocol type="pbcast.NAKACK2"/>
                     <protocol type="UNICAST3"/>
                     <protocol type="pbcast.STABLE"/>
-                    
- <auth-protocol type="AUTH">
- <digest-token algorithm="SHA-512">
- <shared-secret-reference clear-text="rHx2mAFL"/>
- </digest-token>
- </auth-protocol>
-
+                    <!-- ##JGROUPS_AUTH## -->
                     <protocol type="pbcast.GMS"/>
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
@@ -383,22 +372,16 @@
                 </stack>
                 <stack name="tcp">
                     <transport type="TCP" socket-binding="jgroups-tcp"/>
-                    <protocol type="dns.DNS_PING" ><property name="dns_query">sso-ping</property><property name="async_discovery_use_separate_thread_per_request">true</property></protocol>
+                    <!-- ##JGROUPS_PING_PROTOCOL## -->
                     <protocol type="MERGE3"/>
                     <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD_ALL"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <protocol type="SYM_ENCRYPT"> <property name="provider">SunJCE</property> <property name="sym_algorithm">AES</property> <property name="encrypt_entire_message">true</property> <property name="keystore_name">/etc/jgroups-encrypt-secret-volume/jgroups.jceks</property> <property name="store_password">secret</property> <property name="alias">secret-key</property> </protocol>
+                    <!-- ##JGROUPS_ENCRYPT## -->
                     <protocol type="pbcast.NAKACK2"/>
                     <protocol type="UNICAST3"/>
                     <protocol type="pbcast.STABLE"/>
-                    
- <auth-protocol type="AUTH">
- <digest-token algorithm="SHA-512">
- <shared-secret-reference clear-text="rHx2mAFL"/>
- </digest-token>
- </auth-protocol>
-
+                    <!-- ##JGROUPS_AUTH## -->
                     <protocol type="pbcast.GMS"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG3"/>
@@ -576,7 +559,7 @@
                         <policy-module code="Delegating" flag="required"/>
                     </authorization>
                 </security-domain>
-                <!-- no additional security domains configured --><!-- ##ADDITIONAL_SECURITY_DOMAINS## -->
+                <!-- ##ADDITIONAL_SECURITY_DOMAINS## -->
             </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:5.0">
@@ -597,7 +580,7 @@
             <server name="default-server">
                 <ajp-listener name="ajp" socket-binding="ajp"/>
                 <http-listener name="default" socket-binding="http" redirect-socket="proxy-https" enable-http2="true" proxy-address-forwarding="true"/>
-                <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" proxy-address-forwarding="true"/>
+                <!-- ##HTTPS_CONNECTOR## -->
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="sso-welcome-content"/>
                     <!-- ##ACCESS_LOG_VALVE## -->
@@ -681,8 +664,8 @@
                 <default-provider>${keycloak.x509cert.lookup.provider:default}</default-provider>
                 <provider name="default" enabled="true"/>
             </spi>
-            <spi name="hostname"><default-provider>default</default-provider><provider name="default" enabled="true"><properties></properties></provider></spi>
-            <spi name="truststore"><provider name="file" enabled="true"><properties><property name="file" value="/etc/sso-secret-volume/truststore.jks"/><property name="password" value="secret"/><property name="hostname-verification-policy" value="WILDCARD"/><property name="disabled" value="false"/></properties></provider></spi>
+            <!-- ##SSO_SERVER_HOSTNAME_SPI## -->
+            <!-- ##SSO_TRUSTSTORE## -->
             <!-- ##SSO_VAULT_CONFIG## -->
         </subsystem>
     </profile>

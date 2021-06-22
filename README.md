@@ -5,11 +5,18 @@ A new RHSSO image is built by adding a modified version of standalone-openshift.
 
 # Modifications to the original standalone-openshift.xml
 
-## Line 223
+## Extract the standalone-openshift.xml file from the RHSSO image
+docker run -it --rm registry.redhat.io/rh-sso-7/sso74-openshift-rhel8 /bin/bash
+cat /opt/eap/standalone/configuration/standalone-openshift.xml
+
+## Make the following modifications
+This exampele only shows the work cache and the clientSessions cache.
+
+### Line 223
 <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
             <cache-container name="keycloak" module="org.keycloak.keycloak-model-infinispan">
 
-## Lines 245 - 279
+### Lines 245 - 279
 
                <replicated-cache name="work">
                     <remote-store cache="work" 
@@ -21,8 +28,8 @@ A new RHSSO image is built by adding a modified version of standalone-openshift.
                             shared="true">
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
-                        <property name="infinispan.client.hotrod.auth_username">admin</property>
-                        <property name="infinispan.client.hotrod.auth_password">secret</property>
+                        <property name="infinispan.client.hotrod.auth_username">developer</property>
+                        <property name="infinispan.client.hotrod.auth_password">password</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
                         <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
@@ -39,8 +46,8 @@ A new RHSSO image is built by adding a modified version of standalone-openshift.
                             shared="true">
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
-                        <property name="infinispan.client.hotrod.auth_username">admin</property>
-                        <property name="infinispan.client.hotrod.auth_password">secret</property>
+                        <property name="infinispan.client.hotrod.auth_username">developer</property>
+                        <property name="infinispan.client.hotrod.auth_password">password</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
                         <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
@@ -58,16 +65,29 @@ A new RHSSO image is built by adding a modified version of standalone-openshift.
 
 
 
-## Other
-TODO: The hostname for the Infinispan server it currently not configurable.
-
 ## Build and push image
-docker build . -t keycloak-infinispan:latest
-docker tag keycloak-infinispan:latest torbjorndahlen/keycloak-infinispan:latest
+docker build . -t torbjorndahlen/keycloak-infinispan:latest
 docker push torbjorndahlen/keycloak-infinispan:latest
 
 ## Deploy image in OpenShift
 oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest
 oc create route edge secure-keycloak-infinispan --service=keycloak-infinispan --port=8080
+
+
+
+## Other
+
+### The remaining caches can be modified in the same way:
+
+                <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+                <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
+                <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
+                <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+                <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+
+### TODO: The hostname for the Infinispan server it currently not configurable.
+
+
+
 
 
