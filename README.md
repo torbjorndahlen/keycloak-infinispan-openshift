@@ -108,24 +108,37 @@ The hostname, username and password for the Infinispan server are currently not 
 
 ## Deploying Red Hat Data Grid with the Openshift Operator
 
-Note: use RHDG v 8.1 with RHSSO
+Note: use RHDG v 8.1 with RHSSO 7.4
 
 Add the following to the CRD for RHDG:
 
 expose:
+
     host: infinispan-external-rhdg.apps.cluster-1782.1782.sandbox379.opentlc.com
+
     type: Route
+
   logging:
+
     categories:
+
       org.infinispan: trace
+
       org.jgroups: trace
+
   replicas: 1
+
   security:
+
     endpointEncryption:
+
       type: None
+
   service:
+
     type: DataGrid
 
 
 Note: It's easiest to deploy RHSSO and RHDG in the same namespace. Then, RHSSO could just use the service name (e.g. infinispan) to access RHDG.
+
 Note: hostname can be omitted in the CRD spec.expose
