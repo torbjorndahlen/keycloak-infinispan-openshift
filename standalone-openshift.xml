@@ -98,6 +98,18 @@
             <logger category="sun.rmi">
                 <level name="WARN"/>
             </logger>
+            <logger category="org.keycloak.cluster.infinispan">
+                <level name="TRACE"/>
+            </logger>
+                <logger category="org.keycloak.connections.infinispan">
+                    <level name="TRACE"/>
+                </logger>
+                <logger category="org.keycloak.models.cache.infinispan">
+                    <level name="TRACE"/>
+                </logger>
+                <logger category="org.keycloak.models.sessions.infinispan">
+                    <level name="TRACE"/>
+                </logger>
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
@@ -246,10 +258,9 @@
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
                         <property name="infinispan.client.hotrod.auth_username">developer</property>
-                        <property name="infinispan.client.hotrod.auth_password">yrYogZdNnAoBrJp9</property>
+                        <property name="infinispan.client.hotrod.auth_password">bGN7IG54uYmTL3A1</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
-                        <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
                     </remote-store>
                 </replicated-cache>
 
@@ -264,10 +275,9 @@
                         <property name="rawValues">true</property>
                         <property name="marshaller">org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory</property>
                         <property name="infinispan.client.hotrod.auth_username">developer</property>
-                        <property name="infinispan.client.hotrod.auth_password">yrYogZdNnAoBrJp9</property>
+                        <property name="infinispan.client.hotrod.auth_password">bGN7IG54uYmTL3A1</property>
                         <property name="infinispan.client.hotrod.auth_realm">default</property>
                         <property name="infinispan.client.hotrod.auth_server_name">infinispan</property>
-                        <property name="infinispan.client.hotrod.sasl_mechanism">DIGEST-MD5</property>
                     </remote-store>
                 </distributed-cache>
 
@@ -354,7 +364,7 @@
             </channels>
             <stacks>
                 <stack name="udp">
-                    <transport type="UDP" socket-binding="jgroups-udp"/>
+                    <transport type="UDP" socket-binding="jgroups-udp" site="${jboss.site.name}"/>
                     <!-- ##JGROUPS_PING_PROTOCOL## -->
                     <protocol type="MERGE3"/>
                     <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
@@ -699,7 +709,11 @@
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
         <outbound-socket-binding name="remote-cache"> 
-            <remote-destination host="${remote.cache.host:infinispan-srv.infinispan.svc.cluster.local}" 
+        <!--
+            <remote-destination host="${remote.cache.host:console-infinispan.apps.cluster-1782.1782.sandbox379.opentlc.com}" 
+                      port="${remote.cache.port:80}"/> 
+                      -->
+                      <remote-destination host="${remote.cache.host:infinispan}" 
                       port="${remote.cache.port:11222}"/> 
         </outbound-socket-binding>
     </socket-binding-group>
