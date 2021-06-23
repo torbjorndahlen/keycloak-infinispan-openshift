@@ -114,7 +114,7 @@ Add the following to the CRD for RHDG:
 
     expose:
 
-        host: infinispan-external-rhdg.apps.cluster-1782.1782.sandbox379.opentlc.com
+        host: infinispan-external-<namespace>.<openshift-cluster-domain>
 
         type: Route
 
