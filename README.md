@@ -112,31 +112,31 @@ Note: use RHDG v 8.1 with RHSSO 7.4
 
 Add the following to the CRD for RHDG:
 
-expose:
+    expose:
 
-    host: infinispan-external-rhdg.apps.cluster-1782.1782.sandbox379.opentlc.com
+        host: infinispan-external-rhdg.apps.cluster-1782.1782.sandbox379.opentlc.com
 
-    type: Route
+        type: Route
 
-  logging:
+    logging:
 
-    categories:
+        categories:
 
-      org.infinispan: trace
+        org.infinispan: trace
 
-      org.jgroups: trace
+        org.jgroups: trace
 
-  replicas: 1
+    replicas: 1
 
-  security:
+    security:
 
-    endpointEncryption:
+        endpointEncryption:
 
-      type: None
+        type: None
 
-  service:
+    service:
 
-    type: DataGrid
+        type: DataGrid
 
 
 Note: It's easiest to deploy RHSSO and RHDG in the same namespace. Then, RHSSO could just use the service name (e.g. infinispan) to access RHDG.
