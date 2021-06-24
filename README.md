@@ -89,24 +89,7 @@ oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest
 
 oc create route edge secure-keycloak-infinispan --service=keycloak-infinispan --port=8080
 
-
-
-## Other
-
-### The remaining caches can be modified in the same way as the clientSessions cache:
-
-                <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-                <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
-                <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
-                <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-                <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-
-### TODO
-
-The hostname, username and password for the Infinispan server are currently not configurable.
-
-
-## Deploying Red Hat Data Grid with the Openshift Operator
+## Deploy Red Hat Data Grid with the Openshift Operator
 
 Note: use RHDG v 8.1 with RHSSO 7.4
 
@@ -142,3 +125,28 @@ Add the following to the CRD for RHDG:
 Note: It's easiest to deploy RHSSO and RHDG in the same namespace. Then, RHSSO could just use the service name (e.g. infinispan) to access RHDG.
 
 Note: hostname can be omitted in the CRD spec.expose
+
+## TODO
+
+### The remaining caches can be modified in the same way as the clientSessions cache:
+
+                <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+                <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
+                <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
+                <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+                <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
+
+
+### Add environment variables
+
+The hostname, username and password for the Infinispan server are currently not configurable, and should be 
+configured using environment variables in the standalone-openshift.xml file, e.g.
+
+    <property name="infinispan.client.hotrod.auth_username">${env.INFINISPAN_USERNAME}</property>
+    <property name="infinispan.client.hotrod.auth_password">${env.INFINISPAN_PASSWORD}</property>
+
+The deploy RHSSO as follows
+
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e INFINISPAN_USERNAME=developer -e INFINISPAN_USERNAME=password
+
+
