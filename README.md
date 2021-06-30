@@ -102,9 +102,9 @@ Note: hostname can be omitted in the CRD spec.expose
 
 ## PostgreSQL
 
-> oc rsh <postgresql-pod>
-$ psql
-postgres# \l /** list DBs */
-postgres# \c keycloak /** connect to DB keycloak */
-keycloak=# \dt /** list tables */
-keycloak=# SELECT name FROM REALM;
+    > oc rsh <postgresql-pod>
+    $ psql
+    postgres# \l /** list DBs */    
+    postgres# \c keycloak /** connect to DB keycloak */
+    keycloak=# \dt /** list tables */
+    keycloak=# SELECT name FROM REALM;
