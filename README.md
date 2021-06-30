@@ -1,13 +1,15 @@
 # keycloak-infinispan-openshift
 Demo on integrating Keycloak with an external Infinispan server and external PostgreSQL DB
 
-A new RHSSO image is built by adding configuration scripts containing PostgreSQL DB configuration and Infinispan Hotrod client configuration and replicated/distributed caches.
+A new RHSSO image is built by adding configuration scripts in the 'extensions' directory containing PostgreSQL DB configuration and Infinispan Hotrod client configuration and replicated/distributed caches.
 
 ## Prerequisites
 
 ### Created project rhsso-rhdg in OpenShift (tested with OpenShift 4.7)
 
 ### Postgres deployed in OpenShift in project rhsso-rhdg
+
+In this example the DB name is 'keycloak'
 
 ### Infinispan deployed in OpenShift in project rhsso-rhdg (tested with RHDG 8.1)
 
@@ -82,8 +84,27 @@ Note: hostname can be omitted in the CRD spec.expose
 
 
 
-## Deploy RHDG cross-DC with single RHSSO instance in each DC
+### Deploy RHDG cross-DC with single RHSSO instance in each DC using the same PostgreSQL DB located in one of the clusters
+
+#### Use Case:
+
+1. Log in user1 in cluster1
+2. Login user2 in cluster2
+3. View the Sessions menu in each RHSSO instance
+4. There should be 2 sessions visible in each RHSSO instance
+
+### Fix the JGROUPS config
+
+
+### Deploy 2 RHSSO instances in one OCP cluster and verify that both sees the same RHDG cache
 
 
 
-### Deploy 2 RHSSO instances in one OCP cluster using the same PostgreSQL DB located in one of the clusters and verify that both sees the same RHDG cache
+## PostgreSQL
+
+> oc rsh <postgresql-pod>
+$ psql
+postgres# \l /** list DBs */
+postgres# \c keycloak /** connect to DB keycloak */
+keycloak=# \dt /** list tables */
+keycloak=# SELECT name FROM REALM;

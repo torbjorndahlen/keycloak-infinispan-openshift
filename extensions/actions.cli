@@ -2,6 +2,7 @@
 embed-server --std-out=echo  --server-config=standalone-openshift.xml
 
 ## Install Postgresql DB
+## Modify the connection-url when PostgreSQL is deployed externally
 batch
 /subsystem=datasources/data-source=KeycloakDS:remove()
 /subsystem=datasources/data-source=KeycloakDS:add(jndi-name=java:jboss/datasources/KeycloakDS,enabled=true,use-java-context=true,connection-url="jdbc\:postgresql\://postgresql/keycloak",driver-name=postgresql,user-name=${env.DB_USERNAME},password=${env.DB_PASSWORD})
