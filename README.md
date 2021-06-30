@@ -79,13 +79,13 @@ For external RHDG clients, infinispan-external should be used as host name
 
 ## Build and push image
 
-docker build . -t torbjorndahlen/keycloak-infinispan:latest
+docker build -t torbjorndahlen/keycloak-infinispan:latest .
 
 docker push torbjorndahlen/keycloak-infinispan:latest
 
 ## Deploy image in OpenShift
 
-oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest 
 
 oc create route edge secure-keycloak-infinispan --service=keycloak-infinispan --port=8080
 
@@ -132,6 +132,7 @@ Note: hostname can be omitted in the CRD spec.expose
 
                 <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
                 <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
+                <distributed-cache name="actionTokens" owners="${env.CACHE_OWNERS_COUNT:2}">
                 <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
                 <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
                 <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
@@ -145,8 +146,46 @@ configured using environment variables in the standalone-openshift.xml file, e.g
     <property name="infinispan.client.hotrod.auth_username">${env.INFINISPAN_USERNAME}</property>
     <property name="infinispan.client.hotrod.auth_password">${env.INFINISPAN_PASSWORD}</property>
 
-The deploy RHSSO as follows
+Also the site name needs to be passed as an environment variable.
 
-oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e INFINISPAN_USERNAME=developer -e INFINISPAN_USERNAME=password
+Then deploy RHSSO as follows
+
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e INFINISPAN_USERNAME=developer -e INFINISPAN_PASSWORD=password -e INFINISPAN_SERVERNAME=infinispan -e JAVA_OPTS_APPEND=-Djboss.site.name=site1
 
 
+## Deploy RHDG cross-DC with single RHSSO instance in each DC
+
+### Deploy PostgreSQL DB for use by the 2 RHSSO clusters
+
+#### Modify standalone-openshift.xml as follows:
+
+<subsystem xmlns="urn:jboss:domain:datasources:5.0">
+            <datasources>
+                <!-- ##DATASOURCES## -->
+                <datasource jndi-name="java:jboss/datasources/KeycloakDS" pool-name="KeycloakDS" enabled="true" use-java-context="true">
+                    <connection-url>jdbc:postgresql://postgresql/keycloak</connection-url>
+                    <driver>postgresql</driver>
+                    <security>
+                        <user-name>${env.DB_USERNAME}</user-name>
+                        <password>${env.DB_PASSWORD}</password>
+                    </security>
+                </datasource>
+                <drivers>
+                    <driver name="h2" module="com.h2database.h2">
+                        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    </driver>
+                    <driver name="postgresql" module="org.postgresql">
+                        <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
+                    </driver>
+                    <!-- ##DRIVERS## -->
+                </drivers>
+            </datasources>
+
+
+
+#### Depoly RHSSO
+
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e INFINISPAN_USERNAME=developer -e INFINISPAN_PASSWORD=password -e INFINISPAN_SERVERNAME=infinispan -e JAVA_OPTS_APPEND=-Djboss.site.name=site1 -e DB_USERNAME=keycloak -e DB_PASSWORD=password
+
+
+### Deploy 2 RHSSO instances in one OCP cluster and verify that both sees the same RHDG cache

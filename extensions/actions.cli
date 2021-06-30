@@ -1,0 +1,7 @@
+## admin cli commands to edit the configuration
+embed-server --std-out=echo  --server-config=standalone-openshift.xml
+batch
+/subsystem=datasources/data-source=KeycloakDS:remove()
+/subsystem=datasources/data-source=KeycloakDS:add(jndi-name=java:jboss/datasources/KeycloakDS,enabled=true,use-java-context=true,connection-url="jdbc\:postgresql\:keycloak",driver-name=postgresql,user-name=${env.DB_USERNAME},password=${env.DB_PASSWORD})
+run-batch
+quit
