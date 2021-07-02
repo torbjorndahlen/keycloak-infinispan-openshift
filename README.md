@@ -24,7 +24,7 @@ docker push torbjorndahlen/keycloak-infinispan:latest
 ## Deploy modified RHSSO image in OpenShift in project rhsso-rhdg
 
 
-oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e SSO_ADMIN_USER=admin -e SSO_ADMIN_PASSWORD=secret -e INFINISPAN_USERNAME=developer -e INFINISPAN_PASSWORD=password -e INFINISPAN_SERVERNAME=infinispan -e JAVA_OPTS_APPEND=-Djboss.site.name=site1
+oc new-app --docker-image=torbjorndahlen/keycloak-infinispan:latest -e SSO_ADMIN_USER=admin -e SSO_ADMIN_PASSWORD=secret -e INFINISPAN_USERNAME=developer -e INFINISPAN_PASSWORD=b913dv5zSPWhtdAy -e INFINISPAN_SERVERNAME=infinispan -e JAVA_OPTS_APPEND=-Djboss.site.name=site1
  
 
 oc create route edge secure-keycloak-infinispan --service=keycloak-infinispan --port=8080
@@ -93,7 +93,7 @@ Note: hostname can be omitted in the CRD spec.expose
 3. View the Sessions menu in each RHSSO instance
 4. There should be 2 sessions visible in each RHSSO instance
 
-### Fix the JGROUPS config
+### Import truststore into RHSSO from RHDG
 
 
 ### Deploy 2 RHSSO instances in one OCP cluster and verify that both sees the same RHDG cache
@@ -108,3 +108,7 @@ Note: hostname can be omitted in the CRD spec.expose
     postgres# \c keycloak /** connect to DB keycloak */
     keycloak=# \dt /** list tables */
     keycloak=# SELECT name FROM REALM;
+
+## References
+
+    https://access.redhat.com/solutions/3402171

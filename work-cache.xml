@@ -1,0 +1,12 @@
+<infinispan>
+  <cache-container>
+    <replicated-cache name="work">
+      <encoding media-type="application/x-protostream"/>
+      <backups>
+        <backup site="site2" strategy="SYNC">
+          <take-offline min-wait="120000"/>
+        </backup>
+      </backups>
+    </replicated-cache>
+  </cache-container>
+</infinispan>

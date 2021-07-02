@@ -1,0 +1,12 @@
+<infinispan>
+  <cache-container>
+    <distributed-cache name="clientSessions">
+      <encoding media-type="application/x-protostream"/>
+      <backups>
+        <backup site="site2" strategy="SYNC">
+          <take-offline min-wait="120000"/>
+        </backup>
+      </backups>
+    </distributed-cache>
+  </cache-container>
+</infinispan>
