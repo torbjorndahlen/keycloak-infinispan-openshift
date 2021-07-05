@@ -1,15 +1,42 @@
 # keycloak-infinispan-openshift
-Demo on integrating Keycloak with an external Infinispan server and external PostgreSQL DB
+Demo on deploying a cross DC replication with Red Hat SSO and a cross-DC replicated Infinispan cluster and an external PostgreSQL DB.
 
 A new RHSSO image is built by adding configuration scripts in the 'extensions' directory containing PostgreSQL DB configuration and Infinispan Hotrod client configuration and replicated/distributed caches.
 
-## Prerequisites
+Two OpenShift clusters, here called C1 and C2 are deployed.
 
-### Created project rhsso-rhdg in OpenShift (tested with OpenShift 4.7)
+## Preparations
 
-### Postgres deployed in OpenShift in project rhsso-rhdg
+### Create project 
 
-In this example the DB name is 'keycloak'
+Create the project 'rhsso-rhdg' in C1 and C2 (tested with OpenShift 4.7). Note that the project name must be identical in both clusters.
+
+### Deploy Postgresql 
+
+Deploy PostgreSQL DB in C1 only. The RHSSO instance in C2 will use this DB. In a full cross-DC set up each cluster would have its own DB with DB-replication set up between them. Here we're just using a single DB for simplicity.
+
+In this example the DB name is 'keycloak', username 'keycloak' and password 'password'
+
+### Create service accounts and secrets 
+
+For Infinispan cross-DC communication tokens are required for authentication.
+
+Create a service account 'site1' in C1.
+
+$ oc create sa site1
+
+Add cluster-admin role to the service account (Note: likely a 'view' role will be sufficient).
+
+$ oc policy add-role-to-user cluster-admin system:serviceaccount:rhsso-rhdg:site1
+
+Retrieve the service account token
+
+$ oc sa get-token site1 > site1-token.txt
+
+Repeat the same steps for C2, using 'site2' as name for the service account.
+
+
+    
 
 ### Infinispan deployed in OpenShift in project rhsso-rhdg (tested with RHDG 8.1)
 
@@ -37,33 +64,35 @@ Note that the INFINISPAN_USERNAME and INFINISPAN_PASSWORD values should be fetch
 
 Note: use RHDG v 8.1 with RHSSO 7.4
 
-Add the following to the CRD for RHDG:
-
-    expose:
-
-        host: infinispan-external-<namespace>.<openshift-cluster-domain>
-
-        type: Route
-
-    logging:
-
-        categories:
-
-        org.infinispan: trace
-
-        org.jgroups: trace
-
-    replicas: 1
-
-    security:
-
-        endpointEncryption:
-
-        type: None
-
-    service:
-
-        type: DataGrid
+apiVersion: infinispan.org/v1
+kind: Infinispan
+metadata:
+  name: infinispan
+  namespace: rhsso-rhdg
+spec:
+  expose:
+    type: Route
+  logging:
+    categories:
+      org.infinispan: info
+      org.jgroups: info
+      org.jgroups.protocols.TCP: error
+      org.jgroups.protocols.relay.RELAY2: fatal
+  replicas: 1
+  service:
+    sites:
+      local:
+        expose:
+          type: LoadBalancer
+        name: site2
+      locations:
+        - name: site2
+          secretName: site2-token
+          url: 'openshift://api.cluster-f4d9.f4d9.example.opentlc.com:6443'
+        - name: site1
+          secretName: site1-token
+          url: 'openshift://api.cluster-aa58.aa58.sandbox1151.opentlc.com:6443'
+    type: DataGrid
 
 
 Note: It's easiest to deploy RHSSO and RHDG in the same namespace. Then, RHSSO could just use the service name (e.g. infinispan) to access RHDG.
