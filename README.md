@@ -64,35 +64,35 @@ Note that the INFINISPAN_USERNAME and INFINISPAN_PASSWORD values should be fetch
 
 Note: use RHDG v 8.1 with RHSSO 7.4
 
-apiVersion: infinispan.org/v1
-kind: Infinispan
-metadata:
-  name: infinispan
-  namespace: rhsso-rhdg
-spec:
-  expose:
-    type: Route
-  logging:
-    categories:
-      org.infinispan: info
-      org.jgroups: info
-      org.jgroups.protocols.TCP: error
-      org.jgroups.protocols.relay.RELAY2: fatal
-  replicas: 1
-  service:
-    sites:
-      local:
+    apiVersion: infinispan.org/v1
+    kind: Infinispan
+    metadata:
+        name: infinispan
+        namespace: rhsso-rhdg
+    spec:
         expose:
-          type: LoadBalancer
-        name: site2
-      locations:
-        - name: site2
-          secretName: site2-token
-          url: 'openshift://api.cluster-f4d9.f4d9.example.opentlc.com:6443'
-        - name: site1
-          secretName: site1-token
-          url: 'openshift://api.cluster-aa58.aa58.sandbox1151.opentlc.com:6443'
-    type: DataGrid
+            type: Route
+    logging:
+        categories:
+            org.infinispan: info
+            org.jgroups: info
+            org.jgroups.protocols.TCP: error
+            org.jgroups.protocols.relay.RELAY2: fatal
+    replicas: 1
+    service:
+        sites:
+            local:
+                expose:
+                    type: LoadBalancer
+                name: site2
+            locations:
+                - name: site2
+                secretName: site2-token
+                url: 'openshift://api.cluster-f4d9.f4d9.example.opentlc.com:6443'
+                - name: site1
+                secretName: site1-token
+                url: 'openshift://api.cluster-aa58.aa58.sandbox1151.opentlc.com:6443'
+        type: DataGrid
 
 
 Note: It's easiest to deploy RHSSO and RHDG in the same namespace. Then, RHSSO could just use the service name (e.g. infinispan) to access RHDG.
