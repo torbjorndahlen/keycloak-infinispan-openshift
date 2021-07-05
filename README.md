@@ -114,8 +114,24 @@ Navigate to the Infinispan console and create the caches using the XML definitio
 Also create the required caches in C2 using identical cache names.
 
 
-### Create the Infinispan keystore
+### Create the Infinispan keystore, JGROUPS key and truststore
 
+Do these steps in both C1 and C2:
+
+    $ oc get secret rhsso-rhdg-infinispan-cert-secret -o jsonpath='{.data.tls\.crt}' | base64 --decode > tls.crt
+    $ openssl req -new -newkey rsa:4096 -x509 -keyout xpaas.key -out xpaas.crt -days 365 -subj "/CN=xpaas-sso-demo.ca"
+    $ keytool -genkeypair -keyalg RSA -keysize 2048 -dname "CN=secure-sso-sso-app-demo.openshift.example.com" -alias jboss -keystore keystore.jks
+    $ keytool -certreq -keyalg rsa -alias jboss -keystore keystore.jks -file sso.csr
+    $ openssl x509 -req -CA xpaas.crt -CAkey xpaas.key -in sso.csr -out sso.crt -days 365 -CAcreateserial
+    $ keytool -import -file xpaas.crt -alias xpaas.ca -keystore keystore.jks
+    $ keytool -import -file sso.crt -alias jboss -keystore keystore.jks
+    $ keytool -genseckey -alias secret-key -storetype JCEKS -keystore jgroups.jceks
+    $ keytool -import -file xpaas.crt -alias xpaas.ca -keystore truststore.jks
+
+### Create secret and link to service account
+
+    $ oc create secret generic sso-app-secret --from-file=keystore.jks --from-file=jgroups.jceks --from-file=truststore.jks
+    $ oc secrets link default sso-app-secret
 
 ## Build and push modified RHSSO image
 
@@ -185,3 +201,4 @@ Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources c
     https://access.redhat.com/solutions/3402171
     https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites
     https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc
+    https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores
