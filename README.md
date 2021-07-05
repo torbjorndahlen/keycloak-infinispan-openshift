@@ -6,6 +6,7 @@ A new RHSSO image is built by adding configuration scripts in the 'extensions' d
 Two OpenShift 4.x clusters, here called C1 and C2 are used.
 
 Red Hat SSO version: 7.4
+
 Red Hat Data Grid version: 8.1
 
 ## Preparations
@@ -49,9 +50,9 @@ Log in to C1 and generate a secret with the token from site2
 $ oc create secret generic site2-token --from-literal=token=$(cat site2-token.txt)
     
 
-### Deploy Infinispan 
+## Deploy Infinispan 
 
-Deploy an Infinispan Cluster in C1 and in C2 using the Data Grid operator with the following CR. Note that metadata.name must be identical in C1 and C2.
+Deploy an Infinispan Cluster in project 'rhsso-rhdg' in C1 and in C2 using the Data Grid operator with the following CR. Note that the project name must be identical in both clusters.
 
     apiVersion: infinispan.org/v1
     kind: Infinispan
@@ -77,15 +78,43 @@ Deploy an Infinispan Cluster in C1 and in C2 using the Data Grid operator with t
             locations:
                 - name: site2
                 secretName: site2-token
-                url: 'openshift://api.cluster-f4d9.f4d9.example.opentlc.com:6443'
+                url: 'openshift://<Kubernetes API endpoint>:6443'
                 - name: site1
                 secretName: site1-token
-                url: 'openshift://api.cluster-aa58.aa58.sandbox1151.opentlc.com:6443'
+                url: 'openshift://<Kubernetes API endpoint>:6443'
         type: DataGrid
 
 
 
-    Note: hostname can be omitted in the CRD spec.expose
+Notes: 
+
+    metadata.name and metadata.namespace must be identical in C1 and C2.
+    spec.expose.hostname can be omitted 
+    service.sites.locations.url must be the Kubernetes API endpoint (without the /api path, for example api.cluster-aa58.aa58.sandbox1151.opentlc.com), which is where for example 'oc login' is sent.
+
+
+### Create the Infinispan Caches required by RHSSO
+
+Navigate to the Infinispan console and create the caches using the XML definition, for example
+
+    <infinispan>
+        <cache-container>
+            <replicated-cache name="work">
+                <encoding media-type="application/x-protostream"/>
+                <backups>
+                    <backup site="site2" strategy="SYNC">
+                        <take-offline min-wait="120000"/>
+                    </backup>
+                </backups>
+            </replicated-cache>
+        </cache-container>
+    </infinispan>
+
+
+Also create the required caches in C2 using identical cache names.
+
+
+### Create the Infinispan keystore
 
 
 ## Build and push modified RHSSO image
@@ -116,7 +145,6 @@ Note that the INFINISPAN_USERNAME and INFINISPAN_PASSWORD values should be fetch
 ### The remaining caches can be modified in the same way as the clientSessions cache:
 
                 <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-                <distributed-cache name="authenticationSessions" owners="${env.CACHE_OWNERS_AUTH_SESSIONS_COUNT:1}"/>
                 <distributed-cache name="actionTokens" owners="${env.CACHE_OWNERS_COUNT:2}">
                 <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
                 <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
@@ -155,5 +183,5 @@ Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources c
 ## References
 
     https://access.redhat.com/solutions/3402171
-
     https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites
+    https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc
