@@ -198,7 +198,7 @@ Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources c
 
 ## References
 
-    (https://access.redhat.com/solutions/3402171)
-    (https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites)
-    (https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc)
-    (https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores)
+* [https://access.redhat.com/solutions/3402171](https://access.redhat.com/solutions/3402171)
+* [https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites](https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites)
+* [https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc)
+* [https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores)
