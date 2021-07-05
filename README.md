@@ -74,23 +74,23 @@ Deploy an Infinispan Cluster in project 'rhsso-rhdg' in C1 and in C2 using the D
             local:
                 expose:
                     type: LoadBalancer
-                name: site2
+                name: site1
             locations:
                 - name: site2
                 secretName: site2-token
-                url: 'openshift://<Kubernetes API endpoint>:6443'
+                url: 'openshift://<Kubernetes API endpoint for C2>:6443'
                 - name: site1
                 secretName: site1-token
-                url: 'openshift://<Kubernetes API endpoint>:6443'
+                url: 'openshift://<Kubernetes API endpoint for C1>:6443'
         type: DataGrid
 
 
 
 Notes: 
 
-    metadata.name and metadata.namespace must be identical in C1 and C2.
-    spec.expose.hostname can be omitted 
-    service.sites.locations.url must be the Kubernetes API endpoint (without the /api path, for example api.cluster-aa58.aa58.sandbox1151.opentlc.com), which is where for example 'oc login' is sent.
+* metadata.name and metadata.namespace must be identical in C1 and C2.
+* spec.expose.hostname can be omitted 
+* service.sites.locations.url must be the Kubernetes API endpoint (without the /api path, for example api.cluster-aa58.aa58.sandbox1151.opentlc.com), which is where for example 'oc login' is sent.
 
 
 ### Create the Infinispan Caches required by RHSSO
@@ -198,7 +198,7 @@ Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources c
 
 ## References
 
-    https://access.redhat.com/solutions/3402171
-    https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites
-    https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc
-    https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores
+    (https://access.redhat.com/solutions/3402171)
+    (https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites)
+    (https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc)
+    (https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores)
