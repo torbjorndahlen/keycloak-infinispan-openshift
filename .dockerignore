@@ -1,5 +1,5 @@
 README.md
-README_OLD.md
-standalone-openshift.h2-db.xml
-standalone-openshift.infinispan.xml
-sso74-postgresql-infinispan.json
+sso74-https-infinispan.json
+clientSessions-cache.xml
+work-cache.xml
+infinispan-cross-dc-CR.yaml
