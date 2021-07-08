@@ -116,6 +116,32 @@ Navigate to the Infinispan console and create the caches using the XML definitio
     </infinispan>
 
 
+Also create the clientSessions cache:
+
+    <infinispan>
+        <cache-container>
+            <distributed-cache name="clientSessions">
+                <encoding media-type="application/x-protostream"/>
+                <backups>
+                    <backup site="site2" strategy="SYNC">
+                        <take-offline min-wait="120000"/>
+                    </backup>
+                </backups>
+            </distributed-cache>
+        </cache-container>
+    </infinispan>
+
+
+The remaining caches required by RHSSO are:
+
+* sessions
+* actionTokens
+* offlineSessions              
+* offlineClientSessions
+* loginFailures
+
+Use the same XML template as for clientSessions to create these.
+
 Also create the required caches in C2 using identical cache names, however change the backup site to "site1".
 
 ## Deploy RHSSO
@@ -179,7 +205,7 @@ Notes:
 
 #### Upload the template
 
-$ oc create -f sso74-https-infinispan.json -n rhsso-rhdg
+    $ oc create -f sso74-https-infinispan.json -n rhsso-rhdg
 
 #### Import the image
 
@@ -191,38 +217,16 @@ $ oc create -f sso74-https-infinispan.json -n rhsso-rhdg
 
 
 
-## TODO
 
-### The remaining caches can be modified in the same way as the clientSessions cache:
+## Test case
 
-                <distributed-cache name="sessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-                <distributed-cache name="actionTokens" owners="${env.CACHE_OWNERS_COUNT:2}">
-                <distributed-cache name="offlineSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>               
-                <distributed-cache name="offlineClientSessions" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-                <distributed-cache name="loginFailures" owners="${env.CACHE_OWNERS_COUNT:1}"/>
-
-
-
-
-### Deploy RHDG cross-DC with single RHSSO instance in each DC using the same PostgreSQL DB located in one of the clusters
-
-Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources config.
-
-
-#### Use Case:
-
-1. Log in user1 in cluster1
-2. Login user2 in cluster2
+1. Log in user1 in C1
+2. Login user2 in C2
 3. View the Sessions menu in each RHSSO instance
 4. There should be 2 sessions visible in each RHSSO instance
 
 
-
-### Deploy 2 RHSSO instances in one OCP cluster and verify that both sees the same RHDG cache
-
-
-
-## PostgreSQL
+## PostgreSQL commands
 
     > oc rsh <postgresql-pod>
     $ psql
@@ -237,5 +241,4 @@ Add an environment variable, DB_CONNECTION_URL, to the actions.cli datasources c
 * [https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites](https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html/running_data_grid_on_openshift/backup_sites)
 * [https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_installation_and_configuration_guide/operating-mode#assembly-setting-up-crossdc)
 * [https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html-single/red_hat_single_sign-on_for_openshift_on_openjdk/index#Configuring-Keystores)
-* [https://developers.redhat.com/blog/2021/04/23/integrate-red-hat-data-grid-and-red-hats-single-sign-on-technology-on-red-hat-openshift#](https://developers.redhat.com/blog/2021/04/23/integrate-red-hat-data-grid-and-red-hats-single-sign-on-technology-on-red-hat-openshift#)
 * [https://docs.jboss.org/infinispan/12.0/apidocs/org/infinispan/client/hotrod/configuration/package-summary.html](https://docs.jboss.org/infinispan/12.0/apidocs/org/infinispan/client/hotrod/configuration/package-summary.html)
