@@ -1,7 +1,7 @@
 <infinispan>
-  <cache-container>
+  <cache-container statistics-enabled="true">
     <distributed-cache name="clientSessions">
-      <encoding media-type="application/x-protostream"/>
+      <encoding media-type="application/x-jboss-marshalling"/>
       <backups>
         <backup site="site2" strategy="SYNC">
           <take-offline min-wait="120000"/>

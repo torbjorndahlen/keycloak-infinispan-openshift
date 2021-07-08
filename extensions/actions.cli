@@ -8,9 +8,10 @@ batch
 /subsystem=datasources/data-source=KeycloakDS:add(jndi-name=java:jboss/datasources/KeycloakDS,enabled=true,use-java-context=true,connection-url="jdbc\:postgresql\://postgresql/keycloak",driver-name=postgresql,user-name=${env.DB_USERNAME},password=${env.DB_PASSWORD})
 run-batch
 
-## Install Infinispan Cluster
+## Configure connection to Infinispan Cluster
 batch
-/system-property=javax.net.debug:add(value="ssl,handshake")
+## /system-property=javax.net.debug:add(value="ssl,handshake")
+## /system-property=javax.net.debug:add(value="all")
 /subsystem=infinispan/cache-container=keycloak:write-attribute(name=module,value=org.keycloak.keycloak-model-infinispan)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-cache/:add(host=infinispan,port=${remote.cache.port:11222},fixed-source-port=true)
 run-batch
@@ -19,9 +20,15 @@ run-batch
 batch
 /subsystem=infinispan/cache-container=keycloak/replicated-cache=work/store=remote:add(cache=work,remote-servers=[remote-cache],fetch-state=false,passivation=false,preload=false,purge=false,shared=true,properties={rawValues=true,marshaller=org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory,infinispan.client.hotrod.trust_store_file_name=/etc/sso-secret-volume/truststore.jks, infinispan.client.hotrod.trust_store_file_type=JKS, infinispan.client.hotrod.trust_store_password=secret, infinispan.client.hotrod.auth_username=${env.INFINISPAN_USERNAME},infinispan.client.hotrod.auth_password=${env.INFINISPAN_PASSWORD},infinispan.client.hotrod.sasl_mechanism=SCRAM-SHA-512, infinispan.client.hotrod.auth_realm=default,infinispan.client.hotrod.auth_server_name=infinispan})
 /subsystem=infinispan/cache-container=keycloak/distributed-cache=clientSessions/store=remote:add(cache=work,remote-servers=[remote-cache],fetch-state=false,passivation=false,preload=false,purge=false,shared=true,properties={rawValues=true,marshaller=org.keycloak.cluster.infinispan.KeycloakHotRodMarshallerFactory,infinispan.client.hotrod.trust_store_file_name=/etc/sso-secret-volume/truststore.jks, infinispan.client.hotrod.trust_store_file_type=JKS, infinispan.client.hotrod.trust_store_password=secret, infinispan.client.hotrod.auth_username=${env.INFINISPAN_USERNAME},infinispan.client.hotrod.auth_password=${env.INFINISPAN_PASSWORD},infinispan.client.hotrod.sasl_mechanism=SCRAM-SHA-512, infinispan.client.hotrod.auth_realm=default,infinispan.client.hotrod.auth_server_name=infinispan})
-
-
 run-batch
+
+## Debug logging
+## batch
+## /subsystem=logging/logger=org.keycloak.cluster.infinispan:add(level=DEBUG)
+## /subsystem=logging/logger=org.keycloak.connections.infinispan:add(level=DEBUG)
+## /subsystem=logging/logger=org.keycloak.models.cache.infinispan:add(level=DEBUG)
+## /subsystem=logging/logger=org.keycloak.models.sessions.infinispan:add(level=DEBUG)
+## run-batch
 
 
 quit

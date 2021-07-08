@@ -8,10 +8,12 @@ spec:
     type: Route
   logging:
     categories:
+      org.infinispan.server.hotrod: debug
       org.infinispan: info
       org.jgroups: info
       org.jgroups.protocols.TCP: error
       org.jgroups.protocols.relay.RELAY2: fatal
+      org.wildfly.openssl.SSL: debug
   replicas: 1
   service:
     sites:

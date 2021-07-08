@@ -1,7 +1,7 @@
 <infinispan>
   <cache-container>
     <replicated-cache name="work">
-      <encoding media-type="application/x-protostream"/>
+      <encoding media-type="application/x-jboss-marshalling"/>
       <backups>
         <backup site="site2" strategy="SYNC">
           <take-offline min-wait="120000"/>
