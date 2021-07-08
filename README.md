@@ -120,20 +120,21 @@ Also create the required caches in C2 using identical cache names, however chang
 
 ## Deploy RHSSO
 
+    Do these steps in both C1 and C2.
+
 ### Create the RHSSO keystore, JGROUPS key and truststore
 
-Do these steps in both C1 and C2:
-
-    $ oc get secret infinispan-cert-secret -o jsonpath='{.data.tls\.crt}' | base64 --decode > tls.crt
-    $ oc get secret signing-key -n openshift-service-ca -o jsonpath='{.data.tls\.crt}' | base64 --decode > service-ca.crt
-    $ oc get secret signing-key -n openshift-service-ca -o jsonpath='{.data.tls\.key}' | base64 --decode > service-ca.key
+    $ oc get secret signing-key -n openshift-service-ca -o jsonpath='{.data.tls\.crt}' | base64 --decode > xpaas.crt
+    $ oc get secret signing-key -n openshift-service-ca -o jsonpath='{.data.tls\.key}' | base64 --decode > xpaas.key
     $ keytool -genkeypair -keyalg RSA -keysize 2048 -dname "CN=secure-keycloak-infinispan-rhsso-rhdg.apps.<Your OpenShift domain>" -alias jboss -keystore keystore.jks
     $ keytool -certreq -keyalg rsa -alias jboss -keystore keystore.jks -file sso.csr
-    $ openssl x509 -req -CA service-ca.crt -CAkey service-ca.key -in sso.csr -out sso.crt -days 365 -CAcreateserial
-    $ keytool -import -file service-ca.crt -alias service-ca.ca -keystore keystore.jks
+    $ openssl x509 -req -CA xpaas.crt -CAkey xpaas.key -in sso.csr -out sso.crt -days 365 -CAcreateserial
+    $ keytool -import -file xpaas.crt -alias xpaas.ca -keystore keystore.jks
     $ keytool -import -file sso.crt -alias jboss -keystore keystore.jks
     $ keytool -genseckey -alias secret-key -storetype JCEKS -keystore jgroups.jceks
-    $ keytool -import -file service-ca.crt -alias service-ca.ca -keystore truststore.jks
+    $ keytool -import -file xpaas.crt -alias xpaas.ca -keystore truststore.jks
+    $ oc get secret infinispan-cert-secret -o jsonpath='{.data.tls\.crt}' | base64 --decode > tls.crt
+    $ keytool -importcert -file tls.crt -keystore truststore.jks
 
 Notes:
 * For convenience RHSSO and RHDG are deployed in the same namespace. Then, RHSSO will just use the service name (e.g. infinispan) as remote-cache host name to access RHDG (see actions.cli).
@@ -148,7 +149,7 @@ Notes:
     $ docker build -t torbjorndahlen/keycloak-infinispan:latest .
     $ docker push torbjorndahlen/keycloak-infinispan:latest
 
-### Alternative 1: Deploy modified RHSSO image in OpenShift in project rhsso-rhdg
+### Alternative 1: Deploy the modified RHSSO image in OpenShift in project rhsso-rhdg
 
 Do the following in both C1 and C2:
 
@@ -180,16 +181,14 @@ Notes:
 
 $ oc create -f sso74-https-infinispan.json -n rhsso-rhdg
 
+#### Import the image
+
+    $ oc import-image torbjorndahlen/keycloak-infinispan --confirm
+    
 #### Create the RHSSO application
 
-$ oc new-app --template=sso74-https-infinispan -p SSO_ADMIN_USERNAME=admin -p SSO_ADMIN_PASSWORD=secret -p INFINISPAN_USERNAME=developer -p INFINISPAN_PASSWORD=xoJZLSX37iV7BCDf -p INFINISPAN_SERVERNAME=infinispan -p DB_USERNAME=keycloak -p DB_PASSWORD=password -p JAVA_OPTS_APPEND=-Djboss.site.name=site1 -p HTTPS_SECRET="sso-app-secret" -p HTTPS_KEYSTORE="keystore.jks" -p HTTPS_NAME="jboss" -p HTTPS_PASSWORD="secret" -p JGROUPS_ENCRYPT_SECRET="sso-app-secret" -p JGROUPS_ENCRYPT_KEYSTORE="jgroups.jceks" -p JGROUPS_ENCRYPT_NAME="secret-key" -p JGROUPS_ENCRYPT_PASSWORD="secret" -p SSO_TRUSTSTORE="truststore.jks" -p SSO_TRUSTSTORE_PASSWORD="secret" -p SSO_TRUSTSTORE_SECRET="sso-app-secret"
+    $ oc new-app --template=sso74-https-infinispan -p SSO_ADMIN_USERNAME=admin -p SSO_ADMIN_PASSWORD=secret -p INFINISPAN_USERNAME=developer -p INFINISPAN_PASSWORD=xoJZLSX37iV7BCDf -p INFINISPAN_SERVERNAME=infinispan -p DB_USERNAME=keycloak -p DB_PASSWORD=password -p JAVA_OPTS_APPEND=-Djboss.site.name=site1 -p HTTPS_SECRET="sso-app-secret" -p HTTPS_KEYSTORE="keystore.jks" -p HTTPS_NAME="jboss" -p HTTPS_PASSWORD="secret" -p JGROUPS_ENCRYPT_SECRET="sso-app-secret" -p JGROUPS_ENCRYPT_KEYSTORE="jgroups.jceks" -p JGROUPS_ENCRYPT_NAME="secret-key" -p JGROUPS_ENCRYPT_PASSWORD="secret" -p SSO_TRUSTSTORE="truststore.jks" -p SSO_TRUSTSTORE_PASSWORD="secret" -p SSO_TRUSTSTORE_SECRET="sso-app-secret"
 
-
-### Import truststore into RHSSO from RHDG
-
-    $ keytool -importcert -file tls.crt -keystore truststore.jks
-    $ oc create secret generic truststore-secret --from-file=truststore.jks
-    $ oc set volume dc/keycloak-infinispan --add --name=truststore-secret -m /etc/truststore -t secret --secret-name=truststore-secret --default-mode='0755'
 
 
 ## TODO
